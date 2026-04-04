@@ -1,0 +1,30 @@
+# Large data files
+data/*.csv
+data/train.csv
+data/test.csv
+
+# Model artifacts
+models/*.pkl
+models/model.pkl
+
+# Python environment
+.venv/
+venv/
+env/
+*.pyc
+__pycache__/
+*.egg-info/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
