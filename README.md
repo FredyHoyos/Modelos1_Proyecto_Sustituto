@@ -20,8 +20,8 @@ https://www.kaggle.com/competitions/nyc-taxi-trip-duration
    https://www.kaggle.com/competitions/nyc-taxi-trip-duration
 
 2. Aceptar los términos y descargar los archivos:
-   - `train.csv` (~191 MB)
-   - `test.csv` (~67 MB)
+   - `train.csv` (~196 MB)
+   - `test.csv` (~69 MB)
 
 3. Descomprime (si es necesario) y copia los archivos a la carpeta `data/` de este proyecto:
    ```
