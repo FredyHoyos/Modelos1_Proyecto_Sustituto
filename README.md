@@ -105,7 +105,9 @@ Esta entrega cubre únicamente la **Fase 1**. Docker y etapas posteriores (Fase 
 
 
 
-## Fase 2
+
+
+# Fase 2
 
 En la Fase 2 se añade un contenedor Docker con los scripts `train.py` y `predict.py` para entrenar e inferir usando el modelo guardado en disco. Esta etapa no modifica la Fase 1; solo reutiliza el mismo contrato de datos y el mismo archivo `models/model.pkl`.
 
@@ -264,29 +266,26 @@ El comando por defecto del Dockerfile es `bash`, para que el contenedor sea flex
 
 
 
-Modelos1_Proyecto_sustituto/
-│
-├── README.md
-├── requirements.txt
-│
-├── data/
-│   ├── train.csv
-│   └── test.csv
-│
-├── models/
-│   └── model.pkl
-│
-├── fase-1/
-│   └── notebook.ipynb
-│
-├── fase-2/
-│   ├── train.py
-│   ├── predict.py
-│   └── Dockerfile
-│
-└── fase-3/ (proximamente)
-    ├── train.py
-    ├── predict.py
-    ├── apirest.py
-    ├── client.py
-    └── Dockerfile
+Modelos1_Proyecto_sustituto — Estructura del repositorio
+
+| Ruta | Tipo | Descripción |
+|---|---:|---|
+| README.md | Archivo | Instrucciones y notas del proyecto |
+| requirements.txt | Archivo | Dependencias Python |
+| data/ | Carpeta | Datos (no incluidos en repo) |
+| data/train.csv | Archivo | CSV de entrenamiento (local) |
+| data/test.csv | Archivo | CSV de inferencia (local) |
+| models/ | Carpeta | Modelos serializados |
+| models/model.pkl | Archivo | Modelo entrenado (pickle) |
+| fase-1/ | Carpeta | Notebooks y experimentos (Fase 1) |
+| fase-1/notebook.ipynb | Notebook | Cuaderno de análisis y entrenamiento |
+| fase-2/ | Carpeta | Scripts y Docker para entrenamiento/inf.
+| fase-2/train.py | Script | Script de entrenamiento (CLI) |
+| fase-2/predict.py | Script | Script de inferencia (CLI) |
+| fase-2/Dockerfile | Archivo | Dockerfile para Fase 2 |
+| fase-3/ (próximamente) | Carpeta | Extensiones futuras (API, cliente) |
+| fase-3/train.py | Script | (Próximo) entrenamiento de fase 3 |
+| fase-3/predict.py | Script | (Próximo) inferencia fase 3 |
+| fase-3/apirest.py | Script | (Próximo) servidor API REST |
+| fase-3/client.py | Script | (Próximo) cliente de ejemplo |
+| fase-3/Dockerfile | Archivo | (Próximo) Dockerfile para Fase 3 |

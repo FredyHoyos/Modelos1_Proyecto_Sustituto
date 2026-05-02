@@ -1,4 +1,8 @@
-"""Shared preprocessing helpers for phase 2 scripts."""
+"""Funciones compartidas de preprocesamiento para los scripts de la fase 2.
+
+Este módulo centraliza el contrato de características para que entrenamiento
+e inferencia apliquen siempre las mismas reglas de limpieza y generación de atributos.
+"""
 
 from __future__ import annotations
 
@@ -9,6 +13,7 @@ import numpy as np
 import pandas as pd
 
 
+# Lista ordenada de características usada tanto en entrenamiento como en predicción.
 FEATURE_COLS = [
     "passenger_count",
     "pickup_longitude",
@@ -24,6 +29,7 @@ FEATURE_COLS = [
     "is_weekend",
 ]
 
+# Columnas crudas necesarias antes de generar atributos.
 BASE_INPUT_COLS = [
     "passenger_count",
     "pickup_longitude",
@@ -33,13 +39,14 @@ BASE_INPUT_COLS = [
     "pickup_datetime",
 ]
 
+# Columna objetivo que aprende el modelo.
 TRAIN_TARGET_COL = "trip_duration"
 MODEL_DEFAULT_PATH = Path(__file__).resolve().parents[1] / "models" / "model.pkl"
 PREDICTIONS_DEFAULT_PATH = Path(__file__).resolve().parents[1] / "predictions" / "output.csv"
 
 
 def haversine_distance(lat1: pd.Series, lon1: pd.Series, lat2: pd.Series, lon2: pd.Series) -> pd.Series:
-    """Compute the Haversine distance in kilometers between two coordinate pairs."""
+    """Calcula la distancia Haversine en kilómetros entre dos pares de coordenadas."""
     radius_km = 6371.0
 
     lat1_rad = np.radians(lat1)
@@ -57,7 +64,7 @@ def haversine_distance(lat1: pd.Series, lon1: pd.Series, lat2: pd.Series, lon2: 
 
 
 def validate_required_columns(dataframe: pd.DataFrame, required_columns: Iterable[str]) -> None:
-    """Raise a clear error if the input dataframe misses any required columns."""
+    """Lanza un error claro si al dataframe de entrada le faltan columnas requeridas."""
     required_set = set(required_columns)
     missing_columns = sorted(required_set - set(dataframe.columns))
     if missing_columns:
@@ -65,18 +72,22 @@ def validate_required_columns(dataframe: pd.DataFrame, required_columns: Iterabl
 
 
 def preprocess_dataframe(dataframe: pd.DataFrame, require_target: bool = False) -> pd.DataFrame:
-    """Clean raw taxi data and return the feature matrix used by the model."""
+    """Limpia los datos crudos de taxis y devuelve la matriz de atributos usada por el modelo."""
     required_columns = list(BASE_INPUT_COLS)
     if require_target:
         required_columns.append(TRAIN_TARGET_COL)
 
+    # Primero se valida que la entrada tenga los campos necesarios para esta fase.
     validate_required_columns(dataframe, required_columns)
 
     cleaned = dataframe.copy()
+    # Elimina filas con valores nulos en las columnas que usa el modelo.
     cleaned = cleaned.dropna(subset=required_columns).copy()
+    # Convierte la fecha de recogida a datetime para derivar variables temporales.
     cleaned["pickup_datetime"] = pd.to_datetime(cleaned["pickup_datetime"], errors="coerce")
     cleaned = cleaned.dropna(subset=["pickup_datetime"]).copy()
 
+    # Filtra coordenadas obviamente inválidas y cantidades de pasajeros fuera de rango.
     nyc_box = (
         cleaned["pickup_longitude"].between(-74.3, -73.6)
         & cleaned["dropoff_longitude"].between(-74.3, -73.6)
@@ -87,8 +98,10 @@ def preprocess_dataframe(dataframe: pd.DataFrame, require_target: bool = False) 
     cleaned = cleaned[nyc_box & valid_passengers].copy()
 
     if require_target:
+        # Durante el entrenamiento, conserva solo duraciones razonables del viaje.
         cleaned = cleaned[cleaned[TRAIN_TARGET_COL].between(60, 3600)].copy()
 
+    # Generación de atributos compartida entre entrenamiento y predicción.
     cleaned["trip_distance"] = haversine_distance(
         cleaned["pickup_latitude"],
         cleaned["pickup_longitude"],
@@ -106,6 +119,7 @@ def preprocess_dataframe(dataframe: pd.DataFrame, require_target: bool = False) 
 
 
 def build_feature_matrix(dataframe: pd.DataFrame) -> pd.DataFrame:
-    """Extract the ordered feature matrix expected by the trained model."""
+    """Extrae la matriz de atributos en el orden esperado por el modelo entrenado."""
+    # Conserva exactamente el mismo orden de columnas con el que se entrenó el modelo.
     validate_required_columns(dataframe, FEATURE_COLS)
     return dataframe[FEATURE_COLS].copy()

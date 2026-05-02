@@ -1,4 +1,8 @@
-"""Generate taxi duration predictions from a saved model and a CSV input file."""
+"""Genera predicciones de duración de viajes desde un modelo guardado y un CSV de entrada.
+
+El script replica el preprocesamiento del entrenamiento para que la inferencia
+use la misma estructura de atributos que el modelo ajustado.
+"""
 
 from __future__ import annotations
 
@@ -12,7 +16,7 @@ from common import MODEL_DEFAULT_PATH, PREDICTIONS_DEFAULT_PATH, build_feature_m
 
 
 def parse_args() -> argparse.Namespace:
-    """Parse command line arguments for inference."""
+    """Analiza los argumentos de línea de comandos para la inferencia."""
     parser = argparse.ArgumentParser(description="Predict taxi trip duration from a CSV file.")
     parser.add_argument("--input_file", type=str, required=True, help="Path to the input CSV file.")
     parser.add_argument(
@@ -31,21 +35,23 @@ def parse_args() -> argparse.Namespace:
 
 
 def load_model(model_path: Path):
-    """Load a serialized model from disk."""
+    """Carga un modelo serializado desde disco."""
     if not model_path.is_file():
         raise FileNotFoundError(f"Model file not found: {model_path}")
     return joblib.load(model_path)
 
 
 def prepare_input(input_frame: pd.DataFrame) -> pd.DataFrame:
-    """Apply the phase 1 preprocessing steps to raw inference data."""
+    """Aplica al dato crudo de inferencia los mismos pasos de preprocesamiento de la fase 1."""
+    # Reutiliza exactamente la misma generación de atributos usada en entrenamiento.
     prepared = preprocess_dataframe(input_frame, require_target=False)
     return build_feature_matrix(prepared)
 
 
 def build_predictions_output(input_frame: pd.DataFrame, predictions: pd.Series) -> pd.DataFrame:
-    """Create the output dataframe to be written as a CSV file."""
+    """Crea el dataframe de salida que se escribirá como CSV."""
     output_frame = pd.DataFrame({"trip_duration": predictions})
+    # Conserva una columna identificadora útil cuando el archivo de entrada la trae.
     for identifier_column in ("id", "ID", "trip_id"):
         if identifier_column in input_frame.columns:
             output_frame.insert(0, identifier_column, input_frame.loc[predictions.index, identifier_column].to_numpy())
@@ -54,13 +60,14 @@ def build_predictions_output(input_frame: pd.DataFrame, predictions: pd.Series) 
 
 
 def save_predictions(predictions_frame: pd.DataFrame, output_path: Path) -> None:
-    """Persist predictions to disk as a CSV file."""
+    """Guarda las predicciones en disco como archivo CSV."""
+    # Asegura que la carpeta de salida exista antes de escribir el CSV.
     output_path.parent.mkdir(parents=True, exist_ok=True)
     predictions_frame.to_csv(output_path, index=False)
 
 
 def main() -> None:
-    """Run the prediction workflow from CLI arguments."""
+    """Ejecuta el flujo de predicción a partir de los argumentos CLI."""
     args = parse_args()
     input_path = Path(args.input_file)
     model_path = Path(args.model_file)
@@ -72,8 +79,8 @@ def main() -> None:
     model = load_model(model_path)
     input_frame = pd.read_csv(input_path)
     feature_frame = prepare_input(input_frame)
-    # Keep the prediction index aligned with the filtered feature rows so any preserved
-    # identifier column matches the rows that survived preprocessing.
+    # Mantiene alineado el índice de predicción con las filas filtradas para que
+    # cualquier columna identificadora preservada coincida con las filas que sobrevivieron.
     predictions = pd.Series(model.predict(feature_frame), index=feature_frame.index, name="trip_duration")
     output_frame = build_predictions_output(input_frame, predictions)
     save_predictions(output_frame, output_path)
