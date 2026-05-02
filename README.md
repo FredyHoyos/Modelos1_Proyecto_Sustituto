@@ -103,20 +103,20 @@ Al finalizar la ejecución del notebook:
 
 Esta entrega cubre únicamente la **Fase 1**. Docker y etapas posteriores (Fase 2/Fase 3) no forman parte de esta fase.
 
-.
-.
-.
-.
-.
-.
-.
-.
-.
-.
-
-
-
-
+.	
+.	
+.	
+.	
+.	
+.	
+.	
+.	
+.	
+.	
+	
+	
+	
+	
 # Fase 2
 
 En la Fase 2 se añade un contenedor Docker con los scripts `train.py` y `predict.py` para entrenar e inferir usando el modelo guardado en disco. Esta etapa no modifica la Fase 1; solo reutiliza el mismo contrato de datos y el mismo archivo `models/model.pkl`.
